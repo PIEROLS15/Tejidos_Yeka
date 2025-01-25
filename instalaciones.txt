@@ -1,0 +1,8 @@
+npm install @prisma/client
+npm install bcrypt
+npm install bcryptjs
+npm install react-dom
+npm install react-icons
+npm install react-toastify
+npm install next-auth
+npm install react-hook-form

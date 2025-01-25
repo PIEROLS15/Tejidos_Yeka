@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilo general para el Toast */
+.toast-custom {
+  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 100%;
+}
+
+/* Estilo para móviles */
+@media (max-width: 768px) {
+  .toast-custom {
+    font-size: 14px;
+    padding: 8px 15px;
+    max-width: 300px;
+    width: 90%;
+  }
+}

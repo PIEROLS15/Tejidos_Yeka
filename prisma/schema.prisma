@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model RolesUsuarios {
+  id       Int        @id @default(autoincrement())
+  nombre   String     @unique
+  usuarios Usuarios[]
+}
+
+model Usuarios {
+  id            Int            @id @default(autoincrement())
+  correo        String         @unique
+  contrasena    String?
+  nombres       String
+  apellidos     String
+  id_google     String?        @unique
+  id_rol        Int?
+  creado_en     DateTime       @default(now())
+  celular       String?
+  codigo_pais   String?
+  rolesUsuarios RolesUsuarios? @relation(fields: [id_rol], references: [id])
+  pedidos       Pedidos[]
+}
+
+model CategoriasProductos {
+  id        Int         @id @default(autoincrement())
+  nombre    String      @unique
+  productos Productos[]
+}
+
+model Colores {
+  id              Int               @id @default(autoincrement())
+  nombre          String
+  codigo_color    String
+  productos       Productos[]       @relation("ProductoColores")
+  imagenesColores ImagenesColores[]
+  stockColores    StockColores[]
+}
+
+model Productos {
+  id                   Int                    @id @default(autoincrement())
+  nombre               String
+  descripcion          String?
+  precio               Decimal
+  id_categoria         Int?
+  id_material          Int?
+  id_marca             Int?
+  imagen_principal     String?
+  stock                Int?
+  creado_en            DateTime               @default(now())
+  categoriasProductos  CategoriasProductos?   @relation(fields: [id_categoria], references: [id])
+  materiales           Materiales?            @relation(fields: [id_material], references: [id])
+  marcas               Marcas?                @relation(fields: [id_marca], references: [id])
+  detallesPedidos      DetallesPedidos[]
+  promocionesProductos PromocionesProductos[]
+  imagenesColores      ImagenesColores[]
+  stockColores         StockColores[]
+  colores              Colores[]              @relation("ProductoColores")
+}
+
+model Materiales {
+  id        Int         @id @default(autoincrement())
+  nombre    String      @unique
+  productos Productos[]
+}
+
+model Promociones {
+  id                   Int                    @id @default(autoincrement())
+  nombre               String
+  porcentaje_descuento Decimal
+  fecha_inicio         DateTime
+  fecha_fin            DateTime
+  promocionesProductos PromocionesProductos[]
+}
+
+model PromocionesProductos {
+  id           Int          @id @default(autoincrement())
+  id_producto  Int?
+  id_promocion Int?
+  productos    Productos?   @relation(fields: [id_producto], references: [id])
+  promociones  Promociones? @relation(fields: [id_promocion], references: [id])
+}
+
+model Marcas {
+  id                    Int                     @id @default(autoincrement())
+  nombre                String                  @unique
+  logo                  String?
+  productos             Productos[]
+  descuentosPorCantidad DescuentosPorCantidad[]
+}
+
+model DescuentosPorCantidad {
+  id               Int     @id @default(autoincrement())
+  id_marca         Int?
+  cantidad         Int
+  precio_descuento Decimal
+  marcas           Marcas? @relation(fields: [id_marca], references: [id])
+}
+
+model CotizacionesAmigurumi {
+  id                Int      @id @default(autoincrement())
+  nombre            String
+  tamano            Int
+  descripcion       String?
+  imagen_referencia String?
+  creado_en         DateTime @default(now())
+}
+
+model ImagenesColores {
+  id          Int        @id @default(autoincrement())
+  id_producto Int?
+  id_color    Int?
+  imagen      String?
+  productos   Productos? @relation(fields: [id_producto], references: [id])
+  colores     Colores?   @relation(fields: [id_color], references: [id])
+}
+
+model StockColores {
+  id          Int        @id @default(autoincrement())
+  id_producto Int?
+  id_color    Int?
+  cantidad    Int
+  productos   Productos? @relation(fields: [id_producto], references: [id])
+  colores     Colores?   @relation(fields: [id_color], references: [id])
+}
+
+model OpcionesEntrega {
+  id      Int       @id @default(autoincrement())
+  nombre  String?
+  pedidos Pedidos[]
+}
+
+model DetallesEntregaDomicilio {
+  id            Int      @id @default(autoincrement())
+  id_pedido     Int?
+  nombre        String?
+  apellidos     String?
+  dni           String?
+  direccion     String?
+  distrito      String?
+  ciudad        String?
+  region        String?
+  codigo_postal String?
+  celular       String?
+  pais          String?
+  pedidos       Pedidos? @relation(fields: [id_pedido], references: [id])
+}
+
+model PuntosEncuentro {
+  id        Int     @id @default(autoincrement())
+  nombre    String?
+  direccion String?
+  ciudad    String?
+  region    String?
+}
+
+model CodigosDescuento {
+  id               Int       @id @default(autoincrement())
+  codigo           String?   @unique
+  descuento        Decimal
+  fecha_expiracion DateTime?
+  cantidad_minima  Decimal
+  pedidos          Pedidos[]
+}
+
+model Pedidos {
+  id                       Int                        @id @default(autoincrement())
+  id_usuario               Int?
+  monto_total              Decimal
+  id_metodo_pago           Int?
+  estado                   String
+  creado_en                DateTime                   @default(now())
+  id_opcion_entrega        Int?
+  id_codigo_descuento      Int?
+  usuarios                 Usuarios?                  @relation(fields: [id_usuario], references: [id])
+  metodosPago              MetodosPago?               @relation(fields: [id_metodo_pago], references: [id])
+  opcionesEntrega          OpcionesEntrega?           @relation(fields: [id_opcion_entrega], references: [id])
+  codigosDescuento         CodigosDescuento?          @relation(fields: [id_codigo_descuento], references: [id])
+  detallesPedidos          DetallesPedidos[]
+  DetallesEntregaDomicilio DetallesEntregaDomicilio[]
+}
+
+model DetallesPedidos {
+  id          Int        @id @default(autoincrement())
+  id_pedido   Int?
+  id_producto Int?
+  cantidad    Int
+  precio      Decimal
+  pedidos     Pedidos?   @relation(fields: [id_pedido], references: [id])
+  productos   Productos? @relation(fields: [id_producto], references: [id])
+}
+
+model MetodosPago {
+  id      Int       @id @default(autoincrement())
+  nombre  String    @unique
+  pedidos Pedidos[]
+}
