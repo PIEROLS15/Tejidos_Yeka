@@ -6,3 +6,4 @@ npm install react-icons
 npm install react-toastify
 npm install next-auth
 npm install react-hook-form
+npm install react-datepicker

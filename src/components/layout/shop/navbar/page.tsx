@@ -38,7 +38,7 @@ function Navbar() {
     return (
         <nav className="bg-primary text-white">
             <div className="max-w-[1440px] mx-auto">
-                <Loader duration={1000} />
+                <Loader duration={1500} />
                 <DesktopNavbar
                     session={session}
                     isDropdownOpen={isDropdownOpen}

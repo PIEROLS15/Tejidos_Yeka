@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         }
 
         const productos = await prisma.productos.findMany({
-            where: filtros, // Aplicar los filtros
+            where: filtros,
             include: {
                 categoriasProductos: true,
                 materiales: true,
@@ -35,6 +35,11 @@ export async function GET(request: NextRequest) {
                     include: {
                         colores: true,
                     },
+                },
+                promocionesProductos: {
+                    include: {
+                        promociones: {}
+                    }
                 },
             },
         });

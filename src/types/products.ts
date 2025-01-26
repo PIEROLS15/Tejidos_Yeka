@@ -1,3 +1,4 @@
+import { Promociones } from '@prisma/client';
 export interface Products {
     id: number;
     nombre: string;
@@ -33,6 +34,18 @@ export interface Products {
             id: number;
             nombre: string;
             codigo_color: string;
+        };
+    }[];
+    promocionesProductos: {
+        id: number;
+        id_promocion: number;
+        status: boolean;
+        promociones: {
+            id: number;
+            nombre: string;
+            porcentaje_descuento: string;
+            fecha_inicio: string;
+            fecha_fin: string;
         };
     }[];
 }

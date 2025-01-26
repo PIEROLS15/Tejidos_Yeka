@@ -7,6 +7,8 @@ import { TfiWorld } from 'react-icons/tfi';
 import { FaUsers, FaShoppingCart, FaShoppingBasket } from 'react-icons/fa';
 import { FaUsersGear } from 'react-icons/fa6';
 import { MdDashboard, MdOutlineRequestQuote, MdCategory, MdExpandMore, MdInvertColors } from "react-icons/md";
+import { RiDiscountPercentFill } from "react-icons/ri";
+
 
 const Sidebar = () => {
     const pathname = usePathname();
@@ -92,6 +94,10 @@ const Sidebar = () => {
                 <Link href="/admin/colores" className={`${linkStyles} ${getLinkStyles('/admin/colores')}`}>
                     <MdInvertColors className="text-xl w-6" />
                     <span>Colores</span>
+                </Link>
+                <Link href="/admin/descuentos" className={`${linkStyles} ${getLinkStyles('/admin/descuentos')}`}>
+                    <RiDiscountPercentFill className="text-xl w-6" />
+                    <span>Descuentos</span>
                 </Link>
             </nav>
         </div>

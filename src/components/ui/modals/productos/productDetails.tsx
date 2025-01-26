@@ -45,50 +45,78 @@ const ProductDetailsModal: React.FC<ModalProps> = ({ isOpen, onClose, product })
                 </div>
 
                 {/* Contenido del Modal */}
-                <div className='bg-white dark:bg-dark p-8 flex rounded-b-lg'>
+                <div className='bg-white dark:bg-dark p-8 flex rounded-b-lg space-x-5'>
                     {/* Información del producto (izquierda) */}
                     <div className="flex-1 text-dark dark:text-white">
-                        <p><strong>Nombre:</strong> {product.nombre}</p>
-                        <p><strong>Descripción:</strong> {product.descripcion}</p>
-                        <p><strong>Precio:</strong> S/ {product.precio}</p>
-                        <p><strong>Categoría:</strong> {product.categoriasProductos.nombre}</p>
-                        <p><strong>Materiales:</strong> {product.materiales.nombre}</p>
-                        <p><strong>Marca:</strong> {product.marcas.nombre}</p>
-                    </div>
-
-                    {/* Colores e imágenes (derecha) */}
-                    <div className="flex-1 pl-8">
-                        <div className='text-dark dark:text-white'>
-                            <h3 className="font-semibold">Colores Disponibles:</h3>
-                            <select
-                                className="mt-2 p-2 border border-dark rounded bg-whitedark dark:bg-darklight dark:text-white"
-                                onChange={(e) => setSelectedColor(e.target.value)}
-                                value={selectedColor || ''}
-                            >
-                                {product.stockColores.map((color) => (
-                                    <option key={color.id} value={color.colores.nombre}>
-                                        {color.colores.nombre} - {color.cantidad} unidades
-                                    </option>
-                                ))}
-                            </select>
-
-                            <h3 className="mt-4 font-semibold">Imágenes:</h3>
-                            <div className="grid grid-cols-3 gap-2 mt-2">
-                                {filteredImages.map((image) => (
-                                    <div key={image.id} className="w-full h-32 overflow-hidden relative">
-                                        <Image
-                                            src={image.imagen}
-                                            alt={`Color ${image.colores.nombre}`}
-                                            layout="responsive"
-                                            width={100}
-                                            height={128}
-                                            objectFit="cover"
-                                        />
-                                    </div>
-                                ))}
+                        <div className="flex flex-col space-y-4">
+                            <div className="flex flex-col">
+                                <strong>Nombre:</strong>
+                                <input type="text" value={product.nombre} className="bg-whitedark p-2 rounded-lg border border-dark focus:outline-none dark:bg-darklight" disabled />
+                            </div>
+                            <div className="flex flex-col">
+                                <strong>Categoría:</strong>
+                                <input type="text" value={product.categoriasProductos.nombre} className="bg-whitedark p-2 rounded-lg border border-dark focus:outline-none dark:bg-darklight" disabled />
+                            </div>
+                            <div className="flex flex-col">
+                                <strong>Material:</strong>
+                                <input type="text" value={product.materiales.nombre} className="bg-whitedark p-2 rounded-lg border border-dark focus:outline-none dark:bg-darklight" disabled />
+                            </div>
+                            <div className="flex flex-col">
+                                <strong>Marca:</strong>
+                                <input type="text" value={product.marcas.nombre} className="bg-whitedark p-2 rounded-lg border border-dark focus:outline-none dark:bg-darklight" disabled />
                             </div>
                         </div>
                     </div>
+
+
+                    <div className={`flex flex-col ${product.stockColores.length === 0 && filteredImages.length === 0 ? 'flex-1' : 'flex-1/2'} text-dark dark:text-white`}>
+                        <div className="flex flex-col space-y-1">
+                            <strong>Descripción:</strong>
+                            <input
+                                type="text"
+                                value={product.descripcion}
+                                className="bg-whitedark p-2 rounded-lg border border-dark focus:outline-none dark:bg-darklight"
+                                disabled
+                            />
+                        </div>
+                    </div>
+
+
+                    {/* Colores e imágenes (derecha) */}
+                    {(product.stockColores.length > 0 || filteredImages.length > 0) && (
+                        <div className="flex-1">
+                            <div className='text-dark dark:text-white'>
+                                <h3 className="font-semibold">Colores Disponibles:</h3>
+                                <select
+                                    className="mt-2 p-2 border border-dark rounded bg-whitedark dark:bg-darklight dark:text-white focus:outline-none "
+                                    onChange={(e) => setSelectedColor(e.target.value)}
+                                    value={selectedColor || ''}
+                                >
+                                    {product.stockColores.map((color) => (
+                                        <option key={color.id} value={color.colores.nombre}>
+                                            {color.colores.nombre}  {color.colores.codigo_color} - {color.cantidad} unidades
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <h3 className="mt-4 font-semibold">Imagen:</h3>
+                                <div className="grid grid-cols-3 gap-2 mt-2">
+                                    {filteredImages.map((image) => (
+                                        <div key={image.id} className="w-full h-32 overflow-hidden relative">
+                                            <Image
+                                                src={image.imagen}
+                                                alt={`Color ${image.colores.nombre}`}
+                                                layout="responsive"
+                                                width={100}
+                                                height={128}
+                                                objectFit="cover"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="es">
-            <body className={`${roboto.variable} antialiased bg-white dark:bg-dark`}>
+            <body className={`${roboto.variable} antialiased bg-whitedark dark:bg-darklight`}>
                 <Providers>
                     <Navbar />
                     <main className="p-6">

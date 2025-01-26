@@ -5,6 +5,7 @@ import ReusableTable from '@/components/ui/tables'
 import ProductDetailsModal from '@/components/ui/modals/productos/productDetails';
 import React, { useEffect, useState } from 'react';
 import { FaEye, FaEdit } from "react-icons/fa";
+import ProductEditModal from '../../../components/ui/modals/productos/productEdit';
 
 interface Products {
     id: number;
@@ -48,7 +49,8 @@ interface Products {
 const ProductsTable = () => {
     const [productList, setProductList] = useState<Products[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<Products | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const fetchProducts = async () => {
         try {
@@ -67,14 +69,54 @@ const ProductsTable = () => {
         fetchProducts();
     }, []);
 
-    const openModal = (product: Products) => {
+    const openDetailsModal = (product: Products) => {
         setSelectedProduct(product);
-        setIsModalOpen(true);
+        setIsDetailsModalOpen(true);
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
+    const openEditModal = (product: Products) => {
+        setSelectedProduct(product);
+        setIsEditModalOpen(true);
+    };
+
+    const closeDetailsModal = () => {
+        setIsDetailsModalOpen(false);
         setSelectedProduct(null);
+    };
+
+    const closeEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedProduct(null);
+    };
+
+    // Funcion para sumar el stock total del producto
+    const calculateTotalStock = (stockColores: Products['stockColores']) => {
+        return stockColores.reduce((total, stockColor) => total + stockColor.cantidad, 0);
+    };
+
+    const handleProductSave = async (updatedProduct: Products) => {
+        try {
+            const response = await fetch(`/api/productos/${updatedProduct.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedProduct)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update product');
+            }
+
+            // Update the product in the list
+            setProductList(prevList =>
+                prevList.map(product =>
+                    product.id === updatedProduct.id ? updatedProduct : product
+                )
+            );
+        } catch (error) {
+            console.error('Error updating product:', error);
+        }
     };
 
     const tableData = productList.map((product) => ({
@@ -85,16 +127,20 @@ const ProductsTable = () => {
         marca: product.marcas.nombre,
         precio: 'S/ ' + product.precio,
         totalColores: product.stockColores.length,
+        totalStock: calculateTotalStock(product.stockColores),
         acciones: (
             <div className="flex space-x-2 justify-center items-center">
                 <button
-                    onClick={() => openModal(product)}
+                    onClick={() => openDetailsModal(product)}
                     className="bg-[#0674A2] p-2 rounded-lg text-white flex items-center"
                 >
                     <FaEye className="mr-2" />
                     Ver
                 </button>
-                <button className="bg-[#28A745] p-2 rounded-lg text-white flex items-center">
+                <button
+                    onClick={() => openEditModal(product)}
+                    className="bg-[#28A745] p-2 rounded-lg text-white flex items-center"
+                >
                     <FaEdit className="mr-2" />
                     Editar
                 </button>
@@ -102,7 +148,7 @@ const ProductsTable = () => {
         )
     }));
 
-    const headers = ["Id", "Nombre", "Categoria", "Materiales", "Marca", "Precio", "Total Colores", "Acciones"];
+    const headers = ["Id", "Nombre", "Categoria", "Materiales", "Marca", "Precio", "Total Colores", "Stock Total", "Acciones"];
 
     return (
         <div>
@@ -110,12 +156,18 @@ const ProductsTable = () => {
             <ReusableTable headers={headers} data={tableData} itemsPerPage={5} />
 
             <ProductDetailsModal
-                isOpen={isModalOpen}
-                onClose={closeModal}
+                isOpen={isDetailsModalOpen}
+                onClose={closeDetailsModal}
                 product={selectedProduct}
+            />
+
+            <ProductEditModal
+                isOpen={isEditModalOpen}
+                onClose={closeEditModal}
+                product={selectedProduct}
+                onSave={handleProductSave}
             />
         </div>
     );
 }
-
 export default ProductsTable;

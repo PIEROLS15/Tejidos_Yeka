@@ -83,6 +83,7 @@ model PromocionesProductos {
   id           Int          @id @default(autoincrement())
   id_producto  Int?
   id_promocion Int?
+  status       Boolean      @default(true)
   productos    Productos?   @relation(fields: [id_producto], references: [id])
   promociones  Promociones? @relation(fields: [id_promocion], references: [id])
 }
