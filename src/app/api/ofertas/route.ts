@@ -5,8 +5,8 @@ const prisma = new PrismaClient();
 
 export async function GET() {
     try {
-        // Obtener las promociones ordenados por ID descendente
-        const promociones = await prisma.promocionesProductos.findMany({
+        // Obtener las ofertas ordenados por ID descendente
+        const ofertas = await prisma.promocionesProductos.findMany({
             orderBy: { id: 'asc' },
             include: {
                 productos: {},
@@ -14,7 +14,7 @@ export async function GET() {
                 }
             }
         });
-        return NextResponse.json(promociones, { status: 200 });
+        return NextResponse.json(ofertas, { status: 200 });
 
     } catch {
         // Retornar un error con estado 500

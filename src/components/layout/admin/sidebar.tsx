@@ -95,9 +95,9 @@ const Sidebar = () => {
                     <MdInvertColors className="text-xl w-6" />
                     <span>Colores</span>
                 </Link>
-                <Link href="/admin/descuentos" className={`${linkStyles} ${getLinkStyles('/admin/descuentos')}`}>
+                <Link href="/admin/ofertas" className={`${linkStyles} ${getLinkStyles('/admin/ofertas')}`}>
                     <RiDiscountPercentFill className="text-xl w-6" />
-                    <span>Descuentos</span>
+                    <span>Ofertas</span>
                 </Link>
             </nav>
         </div>

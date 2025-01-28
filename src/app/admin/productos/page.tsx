@@ -5,7 +5,9 @@ import ReusableTable from '@/components/ui/tables'
 import ProductDetailsModal from '@/components/ui/modals/productos/productDetails';
 import React, { useEffect, useState } from 'react';
 import { FaEye, FaEdit } from "react-icons/fa";
-import ProductEditModal from '../../../components/ui/modals/productos/productEdit';
+import { IoMdAddCircle } from "react-icons/io";
+import ProductEditModal from '@/components/ui/modals/productos/productEdit';
+import AddColorModal from '@/components/ui/modals/productos/productoAddColor';
 
 interface Products {
     id: number;
@@ -44,6 +46,18 @@ interface Products {
             codigo_color: string;
         };
     }[];
+    promocionesProductos: {
+        id: number;
+        id_promocion: number;
+        status: boolean;
+        promociones: {
+            id: number;
+            nombre: string;
+            porcentaje_descuento: string;
+            fecha_inicio: string;
+            fecha_fin: string;
+        };
+    }[];
 }
 
 const ProductsTable = () => {
@@ -51,6 +65,8 @@ const ProductsTable = () => {
     const [selectedProduct, setSelectedProduct] = useState<Products | null>(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAddColorModalOpen, setIsAddColorModalOpen] = useState(false);
+    const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
     const fetchProducts = async () => {
         try {
@@ -87,6 +103,16 @@ const ProductsTable = () => {
     const closeEditModal = () => {
         setIsEditModalOpen(false);
         setSelectedProduct(null);
+    };
+
+    const openAddColorModal = (productId: number) => {
+        setSelectedProductId(productId);
+        setIsAddColorModalOpen(true);
+    };
+
+    const closeAddColorModal = () => {
+        setIsAddColorModalOpen(false);
+        setSelectedProductId(null);
     };
 
     // Funcion para sumar el stock total del producto
@@ -144,6 +170,13 @@ const ProductsTable = () => {
                     <FaEdit className="mr-2" />
                     Editar
                 </button>
+                <button
+                    onClick={() => openAddColorModal(product.id)}
+                    className="bg-primary p-2 rounded-lg text-white flex items-center"
+                >
+                    <IoMdAddCircle className="mr-2" />
+                    Agregar Color
+                </button>
             </div>
         )
     }));
@@ -167,6 +200,15 @@ const ProductsTable = () => {
                 product={selectedProduct}
                 onSave={handleProductSave}
             />
+
+            {selectedProductId && (
+                <AddColorModal
+                    isOpen={isAddColorModalOpen}
+                    onClose={closeAddColorModal}
+                    productId={selectedProductId}
+                    onColorAdded={fetchProducts}
+                />
+            )}
         </div>
     );
 }

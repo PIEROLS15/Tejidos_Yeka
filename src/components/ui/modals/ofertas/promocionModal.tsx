@@ -58,7 +58,7 @@ const PromocionModal: React.FC<ModalPropsPromo> = ({ isOpen, onClose, onColorAdd
         setError('');
 
         try {
-            const response = await fetch('/api/promociones', {
+            const response = await fetch('/api/ofertas', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -14,7 +14,7 @@ interface Color {
 
 const ColorsTable = () => {
     const [colorList, setColorList] = useState<Color[]>([]);
-    const [isColorModalOpen, setIsColorModalOpen] = useState(false); // Cambié el nombre aquí
+    const [isColorModalOpen, setIsColorModalOpen] = useState(false);
 
     // Función para obtener los colores desde la API
     const fetchColors = async () => {
@@ -47,14 +47,14 @@ const ColorsTable = () => {
             <Loader duration={1000} />
             <div className="flex flex-row items-center space-x-6 mb-5">
                 <h1 className="text-2xl font-bold text-dark dark:text-white">Lista de Colores</h1>
-                <ButtonNewAdmin onClick={() => setIsColorModalOpen(true)} /> {/* Cambié el estado aquí */}
+                <ButtonNewAdmin onClick={() => setIsColorModalOpen(true)} />
             </div>
 
             <ReusableTable headers={['ID', 'Nombre', 'Código de Color']} data={tableData} itemsPerPage={10} />
 
             <ColorModal
-                isOpen={isColorModalOpen} // Cambié el estado aquí también
-                onClose={() => setIsColorModalOpen(false)} // Cambié el estado aquí también
+                isOpen={isColorModalOpen}
+                onClose={() => setIsColorModalOpen(false)}
                 onColorAdded={fetchColors}
             />
         </div>

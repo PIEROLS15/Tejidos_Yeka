@@ -78,7 +78,7 @@ const EditPromocionModal = ({ isOpen, onClose, onPromocionUpdated, promocion }: 
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/promociones', {
+            const response = await fetch('/api/ofertas', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

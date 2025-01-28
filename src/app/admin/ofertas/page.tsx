@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react';
 import Loader from '@/components/loader';
 import ReusableTable from '@/components/ui/tables';
 import ButtonNewAdmin from '@/components/ui/buttons/buttonNewAdmin';
-import PromocionModal from '@/components/ui/modals/promociones/promocionModal';
-import EditPromocionModal from '@/components/ui/modals/promociones/editPromocionModal';
-import { FaEye, FaEdit } from "react-icons/fa";
+import PromocionModal from '@/components/ui/modals/ofertas/promocionModal';
+import EditPromocionModal from '@/components/ui/modals/ofertas/editPromocionModal';
+import { FaEdit } from "react-icons/fa";
 
 interface Promos {
     id: number;
@@ -32,10 +32,10 @@ const PromosTable = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedPromocion, setSelectedPromocion] = useState<Promos | null>(null);
 
-    // Función para obtener las promociones desde la API
+    // Función para obtener las ofertas desde la API
     const fetchPromos = async () => {
         try {
-            const response = await fetch('/api/promociones');
+            const response = await fetch('/api/ofertas');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -86,7 +86,7 @@ const PromosTable = () => {
         <div className="p-4">
             <Loader duration={1000} />
             <div className="flex flex-row items-center space-x-6 mb-5">
-                <h1 className="text-2xl font-bold text-dark dark:text-white">Lista de Descuentos</h1>
+                <h1 className="text-2xl font-bold text-dark dark:text-white">Lista de Ofertas</h1>
                 <ButtonNewAdmin onClick={() => setIsPromoModalOpen(true)} />
             </div>
 

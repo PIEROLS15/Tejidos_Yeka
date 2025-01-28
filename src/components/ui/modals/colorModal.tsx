@@ -51,7 +51,6 @@ const ColorModal: React.FC<ModalProps> = ({ isOpen, onClose, onColorAdded }) => 
             onColorAdded && onColorAdded();
             onClose();
 
-            // Show success toast
             toast.success('Color creado correctamente');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error desconocido');

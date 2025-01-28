@@ -76,7 +76,6 @@ const ProductoDetalle = () => {
                 const data: Producto = await response.json();
                 setProducto(data);
 
-                // Setear imagen y color por defecto
                 if (data.imagenesColores.length > 0) {
                     setImagenSeleccionada(data.imagenesColores[0].imagen);
                     setColorSeleccionado(data.imagenesColores[0].colores);
@@ -95,7 +94,6 @@ const ProductoDetalle = () => {
         fetchProducto();
     }, [id]);
 
-    // Función para hacer zoom a las imágenes
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
         const x = ((e.clientX - left) / width) * 100;
@@ -108,16 +106,9 @@ const ProductoDetalle = () => {
         setColorSeleccionado(color);
     };
 
-    // Obtener el precio con descuento si existe una promoción activa
-    const getPrecioConDescuento = (precio: string, promociones: Producto['promocionesProductos']) => {
-        const promocionActiva = promociones.find(p => p.status);
-        if (promocionActiva) {
-            const porcentajeDescuento = parseFloat(promocionActiva.promociones.porcentaje_descuento);
-            const precioOriginal = parseFloat(precio);
-            const precioConDescuento = precioOriginal * (1 - porcentajeDescuento / 100);
-            return precioConDescuento.toFixed(2);
-        }
-        return null;
+    const isOutOfStock = (colorId: number) => {
+        const stockColor = producto?.stockColores.find(stock => stock.colores.id === colorId);
+        return stockColor?.cantidad === 0;
     };
 
     return (
@@ -153,13 +144,15 @@ const ProductoDetalle = () => {
                         {/* Características */}
                         <div className="max-w-[50%]">
                             <div className='pl-10 text-dark dark:text-white'>
-                                {/* Stock del Producto - Solo el del color seleccionado */}
+                                {/* Stock del Producto */}
                                 <div>
                                     {producto?.stockColores
                                         .filter(stock => stock.colores.id === colorSeleccionado?.id)
                                         .map(stockColor => (
                                             <div key={stockColor.id} className="flex justify-between mt-2">
-                                                <p className="text-xs dark:text-whitedark">Disponibilidad: {stockColor.cantidad} en stock.</p>
+                                                <p className="text-xs dark:text-whitedark">
+                                                    Disponibilidad: {stockColor.cantidad === 0 ? 'Sin stock' : `${stockColor.cantidad} en stock`}
+                                                </p>
                                             </div>
                                         ))}
                                 </div>
@@ -172,12 +165,10 @@ const ProductoDetalle = () => {
                                 {/* Precio del Producto */}
                                 <div>
                                     <div className="flex items-center space-x-4">
-                                        {/* Precio original (tachado solo si hay descuento) */}
                                         <h1 className={`text-3xl font-bold ${producto?.promocionesProductos.some(promocion => promocion.status) ? 'text-gray-500 line-through' : 'text-primary dark:text-secondary'}`}>
                                             S/ {producto?.precio}
                                         </h1>
 
-                                        {/* Precio con descuento (solo si hay una promoción activa) */}
                                         {producto?.promocionesProductos
                                             .filter(promocion => promocion.status)
                                             .map(promocion => (
@@ -187,7 +178,6 @@ const ProductoDetalle = () => {
                                             ))}
                                     </div>
                                 </div>
-
 
                                 {/* Selección de color */}
                                 <div>
@@ -201,16 +191,28 @@ const ProductoDetalle = () => {
                                     {/* Miniaturas de imágenes de colores */}
                                     <div className="grid grid-cols-8 gap-2 mt-4">
                                         {producto?.imagenesColores.map(imagenColor => (
-                                            <div key={imagenColor.id} className="flex flex-col items-center">
-                                                <Image
-                                                    src={imagenColor.imagen}
-                                                    alt={`Color ${imagenColor.colores.nombre}`}
-                                                    className={`w-16 h-16 object-cover rounded-full cursor-pointer ${imagenSeleccionada === imagenColor.imagen ? 'border-2 border-primary' : ''
-                                                        }`}
-                                                    width={64}
-                                                    height={64}
+                                            <div key={imagenColor.id} className="relative group">
+                                                <button
+                                                    className="relative flex flex-col items-center w-16 h-16"
                                                     onClick={() => handleSeleccionarImagen(imagenColor.imagen, imagenColor.colores)}
-                                                />
+                                                >
+                                                    <Image
+                                                        src={imagenColor.imagen}
+                                                        alt={`Color ${imagenColor.colores.nombre}`}
+                                                        className={`w-16 h-16 object-cover rounded-full ${imagenSeleccionada === imagenColor.imagen ? 'border-2 border-primary' : ''
+                                                            }`}
+                                                        width={64}
+                                                        height={64}
+                                                    />
+                                                    {isOutOfStock(imagenColor.colores.id) && (
+                                                        <div className="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-full pointer-events-none" />
+                                                    )}
+                                                </button>
+
+                                                {/* Tooltip */}
+                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-dark text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-200 pointer-events-none dark:bg-white dark:text-dark">
+                                                    {imagenColor.colores.nombre} - {imagenColor.colores.codigo_color}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
