@@ -1,4 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Roboto } from "next/font/google";
 import "../globals.css";
 import Navbar from '@/components/layout/shop/navbar/page';
@@ -12,16 +15,28 @@ const roboto = Roboto({
     weight: "400",
 });
 
-export const metadata: Metadata = {
-    title: "Tejidos Yeka",
-    description: "Las mejores lanas en el sur",
-};
-
 export default function RootLayout({
     children,
-}: Readonly<{
-    children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
+    const pathname = usePathname();
+
+    useEffect(() => {
+        const formatTitle = (path: string) => {
+            if (path === "/") return "Tejidos Yeka";
+
+            // Divide la ruta en partes y usa la última
+            const parts = path.split("/").filter(Boolean); // Filtra elementos vacíos
+            const lastPart = parts[parts.length - 1];
+
+            // Capitaliza la primera letra
+            const formatted = lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
+
+            return `Tejidos Yeka - ${formatted}`;
+        };
+
+        document.title = formatTitle(pathname);
+    }, [pathname]);
+
     return (
         <html lang="es">
             <body className={`${roboto.variable} antialiased bg-whitedark dark:bg-darklight`}>

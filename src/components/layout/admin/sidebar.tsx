@@ -19,8 +19,9 @@ const Sidebar = () => {
     // Función para aplicar estilo cuando estamos en la ruta
     const getLinkStyles = (ruta: string) => pathname === ruta ? 'bg-primary text-white' : '';
 
-    // Rutas dentro del dropdown
+    // Rutas dentro del dropdown productos
     const dropdownRoutes = ["/admin/productos", "/admin/productos/nuevoproducto"];
+
 
     // Verificar si alguna de las rutas está activa para aplicar estilo al botón del dropdown
     const isDropdownActive = dropdownRoutes.includes(pathname);

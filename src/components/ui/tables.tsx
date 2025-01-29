@@ -69,7 +69,7 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
                         {currentData.map((row: TableRow, rowIndex: number) => (
                             <tr
                                 key={rowIndex}
-                                className={`hover:bg-gray-200 ${rowIndex % 2 === 0 ? 'bg-white dark:bg-dark' : 'bg-gray-100 dark:bg-darklight'}`}
+                                className={`${rowIndex % 2 === 0 ? 'bg-white dark:bg-dark' : 'bg-gray-100 dark:bg-darklight'}`}
                             >
                                 {Object.values(row).map((cell: string | number | JSX.Element, cellIndex: number) => (
                                     <td

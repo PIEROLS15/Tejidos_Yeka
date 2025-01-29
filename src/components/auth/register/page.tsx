@@ -71,7 +71,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, closeModal }) => 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
             <div className="bg-white p-4 sm:p-6 rounded-[20px] w-11/12 sm:w-96 relative dark:bg-dark">
                 <button
                     onClick={closeModal}

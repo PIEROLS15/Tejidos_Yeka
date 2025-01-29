@@ -25,7 +25,7 @@ export default {
       colors: {
         primary: "#853a4d",
         secondary: "#dd8a9e",
-        whitedark: "#f7f7f7",
+        whitedark: "#e5e7eb",
         dark: "#36383D",
         darklight: "#5C5E63",
         background: "var(--background)",

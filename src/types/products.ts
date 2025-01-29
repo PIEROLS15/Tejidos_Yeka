@@ -1,10 +1,10 @@
-import { Promociones } from '@prisma/client';
 export interface Products {
     id: number;
     nombre: string;
     descripcion: string;
     imagen_principal: string;
     precio: string;
+    stock: number | null;
     categoriasProductos: {
         id: number;
         nombre: string;

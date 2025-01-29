@@ -11,6 +11,7 @@ type Producto = {
     descripcion: string;
     imagen_principal: string | null;
     precio: string;
+    stock: number | null;
     categoriasProductos: {
         id: number;
         nombre: string;
@@ -76,7 +77,8 @@ const ProductoDetalle = () => {
                 const data: Producto = await response.json();
                 setProducto(data);
 
-                if (data.imagenesColores.length > 0) {
+                // Si no hay imagen principal, inicializar con la primera imagen de colores
+                if (!data.imagen_principal && data.imagenesColores.length > 0) {
                     setImagenSeleccionada(data.imagenesColores[0].imagen);
                     setColorSeleccionado(data.imagenesColores[0].colores);
                 }
@@ -125,18 +127,41 @@ const ProductoDetalle = () => {
                                 onMouseLeave={() => setZoom(false)}
                                 onMouseMove={handleMouseMove}
                             >
-                                {imagenSeleccionada && (
-                                    <div
-                                        className="absolute inset-0 transition-transform duration-200 ease-in-out"
-                                        style={{
-                                            backgroundImage: `url(${imagenSeleccionada})`,
-                                            backgroundSize: zoom ? '200%' : 'contain',
-                                            backgroundPosition: zoom ? `${zoomPosition.x}% ${zoomPosition.y}%` : 'center',
-                                            backgroundRepeat: 'no-repeat',
-                                            width: '100%',
-                                            height: '100%',
-                                        }}
-                                    />
+                                {producto.imagen_principal ? (
+                                    // Mostrar imagen principal si existe
+                                    <div className="relative w-full h-full">
+                                        <Image
+                                            src={producto.imagen_principal}
+                                            alt={producto.nombre}
+                                            fill
+                                            sizes="(max-width: 500px) 100vw, 500px"
+                                            className={`object-contain transition-transform duration-200 ${zoom ? 'scale-150' : 'scale-100'}`}
+                                            style={{
+                                                transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
+                                            }}
+                                            priority
+                                            quality={100}
+                                        />
+                                    </div>
+                                ) : (
+
+                                    // Mostrar imagen seleccionada de colores si no hay imagen principal
+                                    imagenSeleccionada && (
+                                        <div className="relative w-full h-full">
+                                            <Image
+                                                src={imagenSeleccionada}
+                                                alt={producto.nombre}
+                                                fill
+                                                sizes="(max-width: 500px) 100vw, 500px"
+                                                className={`object-contain transition-transform duration-200 ${zoom ? 'scale-150' : 'scale-100'}`}
+                                                style={{
+                                                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
+                                                }}
+                                                priority
+                                                quality={100}
+                                            />
+                                        </div>
+                                    )
                                 )}
                             </div>
                         </div>
@@ -146,30 +171,40 @@ const ProductoDetalle = () => {
                             <div className='pl-10 text-dark dark:text-white'>
                                 {/* Stock del Producto */}
                                 <div>
-                                    {producto?.stockColores
-                                        .filter(stock => stock.colores.id === colorSeleccionado?.id)
-                                        .map(stockColor => (
-                                            <div key={stockColor.id} className="flex justify-between mt-2">
-                                                <p className="text-xs dark:text-whitedark">
-                                                    Disponibilidad: {stockColor.cantidad === 0 ? 'Sin stock' : `${stockColor.cantidad} en stock`}
-                                                </p>
-                                            </div>
-                                        ))}
+                                    {producto.imagen_principal ? (
+                                        // Mostrar stock general si existe imagen principal
+                                        <p className="text-xs dark:text-whitedark">
+                                            Disponibilidad: {producto.stock === 0 ? 'Sin stock' :
+                                                producto.stock === null ? 'Stock no disponible' :
+                                                    `${producto.stock} en stock`}
+                                        </p>
+                                    ) : (
+                                        // Mostrar stock por color si no hay imagen principal
+                                        producto.stockColores
+                                            .filter(stock => stock.colores.id === colorSeleccionado?.id)
+                                            .map(stockColor => (
+                                                <div key={stockColor.id} className="flex justify-between mt-2">
+                                                    <p className="text-xs dark:text-whitedark">
+                                                        Disponibilidad: {stockColor.cantidad === 0 ? 'Sin stock' : `${stockColor.cantidad} en stock`}
+                                                    </p>
+                                                </div>
+                                            ))
+                                    )}
                                 </div>
 
                                 {/* Nombre del Producto */}
                                 <div>
-                                    <h1 className='text-3xl font-bold'>{producto?.nombre}</h1>
+                                    <h1 className='text-3xl font-bold'>{producto.nombre}</h1>
                                 </div>
 
                                 {/* Precio del Producto */}
                                 <div>
                                     <div className="flex items-center space-x-4">
-                                        <h1 className={`text-3xl font-bold ${producto?.promocionesProductos.some(promocion => promocion.status) ? 'text-gray-500 line-through' : 'text-primary dark:text-secondary'}`}>
-                                            S/ {producto?.precio}
+                                        <h1 className={`text-3xl font-bold ${producto.promocionesProductos.some(promocion => promocion.status) ? 'text-gray-500 line-through' : 'text-primary dark:text-secondary'}`}>
+                                            S/ {producto.precio}
                                         </h1>
 
-                                        {producto?.promocionesProductos
+                                        {producto.promocionesProductos
                                             .filter(promocion => promocion.status)
                                             .map(promocion => (
                                                 <h1 key={promocion.id} className="text-3xl font-bold text-primary dark:text-secondary">
@@ -179,49 +214,62 @@ const ProductoDetalle = () => {
                                     </div>
                                 </div>
 
-                                {/* Selección de color */}
-                                <div>
-                                    {/* Nombre y código de color seleccionado */}
-                                    {colorSeleccionado && (
-                                        <p className="text-xl font-bold">
-                                            Selecciona tu color: {colorSeleccionado.nombre} - {colorSeleccionado.codigo_color}
-                                        </p>
-                                    )}
+                                {/* Selección de color - Solo mostrar si no hay imagen principal */}
+                                {!producto.imagen_principal && (
+                                    <div>
+                                        {/* Nombre y código de color seleccionado */}
+                                        {colorSeleccionado && (
+                                            <p className="text-xl font-bold">
+                                                Selecciona tu color: {colorSeleccionado.nombre} - {colorSeleccionado.codigo_color}
+                                            </p>
+                                        )}
 
-                                    {/* Miniaturas de imágenes de colores */}
-                                    <div className="grid grid-cols-8 gap-2 mt-4">
-                                        {producto?.imagenesColores.map(imagenColor => (
-                                            <div key={imagenColor.id} className="relative group">
-                                                <button
-                                                    className="relative flex flex-col items-center w-16 h-16"
-                                                    onClick={() => handleSeleccionarImagen(imagenColor.imagen, imagenColor.colores)}
-                                                >
-                                                    <Image
-                                                        src={imagenColor.imagen}
-                                                        alt={`Color ${imagenColor.colores.nombre}`}
-                                                        className={`w-16 h-16 object-cover rounded-full ${imagenSeleccionada === imagenColor.imagen ? 'border-2 border-primary' : ''
-                                                            }`}
-                                                        width={64}
-                                                        height={64}
-                                                    />
-                                                    {isOutOfStock(imagenColor.colores.id) && (
-                                                        <div className="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-full pointer-events-none" />
-                                                    )}
-                                                </button>
+                                        {/* Miniaturas de imágenes de colores */}
+                                        <div className="grid grid-cols-8 gap-2 mt-4">
+                                            {producto.imagenesColores.map(imagenColor => (
+                                                <div key={imagenColor.id} className="relative group">
+                                                    <button
+                                                        className="relative flex flex-col items-center w-16 h-16"
+                                                        onClick={() => handleSeleccionarImagen(imagenColor.imagen, imagenColor.colores)}
+                                                    >
+                                                        <Image
+                                                            src={imagenColor.imagen}
+                                                            alt={`Color ${imagenColor.colores.nombre}`}
+                                                            className={`w-16 h-16 object-cover rounded-full ${imagenSeleccionada === imagenColor.imagen ? 'border-2 border-primary' : ''}`}
+                                                            width={64}
+                                                            height={64}
+                                                        />
+                                                        {isOutOfStock(imagenColor.colores.id) && (
+                                                            <div className="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-full pointer-events-none" />
+                                                        )}
+                                                    </button>
 
-                                                {/* Tooltip */}
-                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-dark text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-200 pointer-events-none dark:bg-white dark:text-dark">
-                                                    {imagenColor.colores.nombre} - {imagenColor.colores.codigo_color}
+                                                    {/* Tooltip */}
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-dark text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-200 pointer-events-none dark:bg-white dark:text-dark">
+                                                        {imagenColor.colores.nombre} - {imagenColor.colores.codigo_color}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Etiquetas */}
                                 <div>
-                                    <p className='text-xs'>Etiqueta: {producto?.categoriasProductos.nombre}</p>
+                                    <p className='text-xs'>Etiqueta: {producto.categoriasProductos.nombre}</p>
                                 </div>
+
+                                {/* Descripción */}
+                                <div className="descripcion-producto">
+                                    <h3 className="text-xl font-bold mb-2">Descripción</h3>
+                                    <div
+                                        className="proceso-quill space-y-2"
+                                        dangerouslySetInnerHTML={{
+                                            __html: producto.descripcion
+                                        }}
+                                    />
+                                </div>
+
                             </div>
                         </div>
                     </div>

@@ -39,7 +39,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, closeModal }) => {
     return (
         <>
             {/* Coloca el contenedor de Toast aquí */}
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999]">
                 <div className="bg-white p-4 sm:p-6 rounded-[20px] w-11/12 sm:w-96 relative dark:bg-dark">
                     <button
                         onClick={closeModal}

@@ -7,3 +7,4 @@ npm install react-toastify
 npm install next-auth
 npm install react-hook-form
 npm install react-datepicker
+npm install react-quill

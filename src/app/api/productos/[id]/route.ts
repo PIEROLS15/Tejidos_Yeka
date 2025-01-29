@@ -94,3 +94,44 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         }, { status: 500 });
     }
 }
+
+// Endpoint DELETE para eliminar un producto por ID
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+    const { id } = params; // Obtén el ID del producto desde los parámetros de la URL
+
+    try {
+        // Eliminar las relaciones de promociones asociadas al producto
+        await prisma.promocionesProductos.deleteMany({
+            where: { id_producto: parseInt(id) }, // Asegúrate de que este campo esté correcto
+        });
+
+        // Eliminar las relaciones de imágenes asociadas al producto
+        await prisma.imagenesColores.deleteMany({
+            where: { id_producto: parseInt(id) }, // Asegúrate de que este campo esté correcto
+        });
+
+        // Eliminar las relaciones de stock asociadas al producto
+        await prisma.stockColores.deleteMany({
+            where: { id_producto: parseInt(id) }, // Asegúrate de que este campo esté correcto
+        });
+
+        // Eliminar las relaciones de colores asociadas al producto
+        await prisma.colores.deleteMany({
+            where: { productos: { some: { id: parseInt(id) } } }, // Relación de productos a colores
+        });
+
+        // Finalmente, eliminar el producto
+        const productoEliminado = await prisma.productos.delete({
+            where: { id: parseInt(id) },
+        });
+
+        if (!productoEliminado) {
+            return NextResponse.json({ message: 'Producto no encontrado' }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: 'Producto eliminado con éxito' }, { status: 200 });
+    } catch (error) {
+        console.error('Error al eliminar el producto:', error);
+        return NextResponse.json({ message: 'Error al eliminar el producto' }, { status: 500 });
+    }
+}

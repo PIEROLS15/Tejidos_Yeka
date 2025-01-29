@@ -26,6 +26,7 @@ const AddColorModal = ({ isOpen, onClose, productId, onColorAdded }: AddColorMod
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string>('');
 
+    // Obtenemos los colores
     useEffect(() => {
         const fetchColors = async () => {
             try {

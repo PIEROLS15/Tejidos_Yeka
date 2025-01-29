@@ -11,6 +11,21 @@
   width: 100%;
 }
 
+/* Estilos para quill */
+.proceso-quill ul {
+  @apply list-disc pl-5 space-y-1;
+}
+
+.proceso-quill li {
+  @apply text-sm;
+}
+
+/* Cambia el color de las viñetas */
+.proceso-quill ul li::marker {
+  color: #853a4d;
+  font-size: 1.5rem;
+}
+
 /* Estilo para móviles */
 @media (max-width: 768px) {
   .toast-custom {

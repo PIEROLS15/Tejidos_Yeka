@@ -53,3 +53,49 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ message: 'Error al obtener los productos' }, { status: 500 });
     }
 }
+
+export async function POST(request: NextRequest) {
+    try {
+        const body = await request.json();
+
+        const {
+            nombre,
+            precio,
+            stock = null,
+            id_categoria,
+            id_materiales = null,
+            id_marcas = null,
+            descripcion,
+            imagen_principal = null
+        } = body;
+
+        // Validaciones básicas
+        if (!nombre || !precio || !id_categoria || !descripcion) {
+            return NextResponse.json({ message: "Todos los campos obligatorios deben estar presentes" }, { status: 400 });
+        }
+
+        // Validación de precio (asegurarse que sea un número válido)
+        if (isNaN(precio) || parseFloat(precio) <= 0) {
+            return NextResponse.json({ message: "El precio debe ser un número válido mayor que cero" }, { status: 400 });
+        }
+
+        // Creación del producto
+        const nuevoProducto = await prisma.productos.create({
+            data: {
+                nombre,
+                precio: parseFloat(precio),
+                stock: stock !== null ? parseInt(stock) : null,
+                id_categoria: parseInt(id_categoria),
+                id_material: id_materiales ? parseInt(id_materiales) : null,
+                id_marca: id_marcas ? parseInt(id_marcas) : null,
+                descripcion,
+                imagen_principal: imagen_principal || null
+            }
+        });
+
+        return NextResponse.json(nuevoProducto, { status: 201 });
+    } catch (error) {
+        console.error("Error al crear el producto:", error);
+        return NextResponse.json({ message: "Error al crear el producto" }, { status: 500 });
+    }
+}
