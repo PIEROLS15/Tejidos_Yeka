@@ -12,6 +12,7 @@
   "dependencies": {
     "@prisma/client": "^6.2.1",
     "bcryptjs": "^2.4.3",
+    "dompurify": "^3.2.3",
     "next": "^13.5.8",
     "next-auth": "^4.24.11",
     "react": "^18",

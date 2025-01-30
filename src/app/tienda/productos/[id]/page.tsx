@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Loader from '@/components/loader';
+import { sanitizeHTML } from '@/utils/sanitizeHTML';
 
 type Producto = {
     id: number;
@@ -112,6 +113,9 @@ const ProductoDetalle = () => {
         const stockColor = producto?.stockColores.find(stock => stock.colores.id === colorId);
         return stockColor?.cantidad === 0;
     };
+
+    // Sanitizar la descripción del producto usando DOMPurify
+    const sanitizedDescription = sanitizeHTML(producto?.descripcion || '');
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -265,7 +269,7 @@ const ProductoDetalle = () => {
                                     <div
                                         className="proceso-quill space-y-2"
                                         dangerouslySetInnerHTML={{
-                                            __html: producto.descripcion
+                                            __html: sanitizedDescription,
                                         }}
                                     />
                                 </div>

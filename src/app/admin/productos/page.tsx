@@ -148,7 +148,12 @@ const ProductsTable = () => {
     };
 
     // Funcion para sumar el stock total del producto
-    const calculateTotalStock = (stockColores: Products['stockColores']) => {
+    const calculateTotalStock = (stockColores: Products['stockColores'], stock: number | null) => {
+        // Si stock no es null, retornar ese valor
+        if (stock !== null) {
+            return stock;
+        }
+        // Si stock es null, calcular la suma de stockColores
         return stockColores.reduce((total, stockColor) => total + stockColor.cantidad, 0);
     };
 
@@ -260,8 +265,8 @@ const ProductsTable = () => {
         nombre: product.nombre,
         categoria: product.categoriasProductos.nombre,
         precio: 'S/ ' + product.precio,
-        totalColores: product.stockColores.length,
-        totalStock: calculateTotalStock(product.stockColores),
+        totalColores: product.imagen_principal && product.stock !== null ? "-" : product.stockColores.length,
+        totalStock: calculateTotalStock(product.stockColores, product.stock),
         acciones: (
             <div className="flex space-x-2 justify-center items-center">
                 <div className="group relative">
@@ -288,29 +293,33 @@ const ProductsTable = () => {
                     </span>
                 </div>
 
-                <div className="group relative">
-                    <button
-                        onClick={() => openAddColorModal(product.id)}
-                        className="bg-primary p-2 rounded-lg text-white flex items-center"
-                    >
-                        <IoMdAddCircle className='text-xl' />
-                    </button>
-                    <span className={tooltipStyles}>
-                        Agregar color
-                    </span>
-                </div>
+                {product.imagen_principal ? null : (
+                    <>
+                        <div className="group relative">
+                            <button
+                                onClick={() => openAddColorModal(product.id)}
+                                className="bg-primary p-2 rounded-lg text-white flex items-center"
+                            >
+                                <IoMdAddCircle className='text-xl' />
+                            </button>
+                            <span className={tooltipStyles}>
+                                Agregar color
+                            </span>
+                        </div>
 
-                <div className="group relative">
-                    <button
-                        onClick={() => openDeleteColorModal(product.id)}
-                        className="bg-primary p-2 rounded-lg text-white flex items-center"
-                    >
-                        <MdFormatColorReset className='text-xl' />
-                    </button>
-                    <span className={tooltipStyles}>
-                        Eliminar color
-                    </span>
-                </div>
+                        <div className="group relative">
+                            <button
+                                onClick={() => openDeleteColorModal(product.id)}
+                                className="bg-primary p-2 rounded-lg text-white flex items-center"
+                            >
+                                <MdFormatColorReset className='text-xl' />
+                            </button>
+                            <span className={tooltipStyles}>
+                                Eliminar color
+                            </span>
+                        </div>
+                    </>
+                )}
 
                 <div className="group relative">
                     <button

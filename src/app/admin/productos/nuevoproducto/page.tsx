@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import Image from 'next/image';
 import 'react-quill/dist/quill.snow.css';
 import dynamic from 'next/dynamic';
+import Loader from '@/components/loader';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 interface Categorias {
@@ -223,6 +224,7 @@ const NuevoProducto = () => {
 
     return (
         <div>
+            <Loader duration={1000} />
             <h1 className='text-center text-dark text-3xl font-extrabold mb-10 dark:text-white'>Crea un nuevo producto</h1>
 
             {error && (
