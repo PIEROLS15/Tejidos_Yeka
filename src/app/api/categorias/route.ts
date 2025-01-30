@@ -23,3 +23,31 @@ export async function GET() {
         await prisma.$disconnect();
     }
 }
+
+export async function POST(request: NextRequest) {
+    try {
+        const body = await request.json();
+        const { nombre } = body;
+
+        if (!nombre) {
+            return NextResponse.json(
+                { error: 'El nombre es obligatorio' },
+                { status: 400 }
+            );
+        }
+
+        const nuevoColor = await prisma.categoriasProductos.create({
+            data: { nombre },
+        });
+
+        return NextResponse.json(nuevoColor, { status: 201 });
+
+    } catch (error) {
+        return NextResponse.json(
+            { error: 'Ocurrió un error al procesar la solicitud.' },
+            { status: 500 }
+        );
+    } finally {
+        await prisma.$disconnect();
+    }
+}
