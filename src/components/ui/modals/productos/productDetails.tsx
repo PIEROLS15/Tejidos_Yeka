@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Products } from '@/types/products';
 import { sanitizeHTML } from '@/utils/sanitizeHTML';
+import ColorDropdown from '@/components/ui/dropdowns/dropdownColorAdmin';
+import InputAdmin from '@/components/ui/inputAdmin';
 
 interface ModalProps {
     isOpen: boolean;
@@ -52,6 +54,9 @@ const ProductDetailsModal: React.FC<ModalProps> = ({ isOpen, onClose, product })
         ? [mainImage]
         : filteredImages;
 
+    const inputStyles =
+        "border border-darklight p-2 w-full rounded-[10px] text-[12px] 2xl:text-[16px] text-dark bg-whitedark focus:outline-none dark:bg-darklight dark:text-white dark:border-white"
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
             <div className="rounded-lg shadow-lg max-w-4xl w-full">
@@ -73,28 +78,19 @@ const ProductDetailsModal: React.FC<ModalProps> = ({ isOpen, onClose, product })
 
                 {/* Contenido del Modal */}
                 <div className='bg-white dark:bg-dark p-8 flex rounded-b-lg space-x-5'>
-                    {/* Información del producto (izquierda) */}
+                    {/* Información del producto*/}
                     <div className="flex-1 text-dark dark:text-white">
                         <div className="flex flex-col space-y-4">
-                            <div className="flex flex-col">
-                                <strong>Nombre:</strong>
-                                <input type="text" value={product.nombre} className="bg-whitedark p-2 rounded-lg border border-dark focus:outline-none dark:bg-darklight" disabled />
-                            </div>
-                            <div className="flex flex-col">
-                                <strong>Categoría:</strong>
-                                <input type="text" value={product.categoriasProductos.nombre} className="bg-whitedark p-2 rounded-lg border border-dark focus:outline-none dark:bg-darklight" disabled />
-                            </div>
+                            <InputAdmin label="Nombre" value={product.nombre} inputStyles={inputStyles} disabled />
+
+                            <InputAdmin label="Categoría" value={product.categoriasProductos.nombre} inputStyles={inputStyles} disabled />
+
                             {product.materiales && product.materiales.nombre && (
-                                <div className="flex flex-col">
-                                    <strong>Material:</strong>
-                                    <input type="text" value={product.materiales.nombre} className="bg-whitedark p-2 rounded-lg border border-dark focus:outline-none dark:bg-darklight" disabled />
-                                </div>
+                                <InputAdmin label="Material" value={product.materiales.nombre} inputStyles={inputStyles} disabled />
                             )}
+
                             {product.marcas && product.marcas.nombre && (
-                                <div className="flex flex-col">
-                                    <strong>Marca:</strong>
-                                    <input type="text" value={product.marcas.nombre} className="bg-whitedark p-2 rounded-lg border border-dark focus:outline-none dark:bg-darklight" disabled />
-                                </div>
+                                <InputAdmin label="Marca" value={product.marcas.nombre} inputStyles={inputStyles} disabled />
                             )}
                         </div>
                     </div>
@@ -113,25 +109,17 @@ const ProductDetailsModal: React.FC<ModalProps> = ({ isOpen, onClose, product })
                         </div>
                     </div>
 
-                    {/* Colores e imágenes (derecha) */}
+                    {/* Colores e imágenes */}
                     {(product.stockColores.length > 0 || imagesToShow.length > 0) && (
                         <div className="flex-1">
                             <div className='text-dark dark:text-white'>
                                 {product.stockColores.length > 0 && (
-                                    <>
-                                        <h3 className="font-semibold">Colores Disponibles:</h3>
-                                        <select
-                                            className="mt-2 p-2 border border-dark rounded bg-whitedark dark:bg-darklight dark:text-white focus:outline-none "
-                                            onChange={(e) => setSelectedColor(e.target.value)}
-                                            value={selectedColor || ''}
-                                        >
-                                            {product.stockColores.map((color) => (
-                                                <option key={color.id} value={color.colores.nombre}>
-                                                    {color.colores.nombre}  {color.colores.codigo_color} - {color.cantidad} unidades
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </>
+                                    <ColorDropdown
+                                        label='Colores:'
+                                        colors={product.stockColores}
+                                        selectedColor={selectedColor || ''}
+                                        onChange={(e) => setSelectedColor(e.target.value)}
+                                    />
                                 )}
 
                                 <h3 className="mt-2 font-semibold">Imagen:</h3>
@@ -144,6 +132,7 @@ const ProductDetailsModal: React.FC<ModalProps> = ({ isOpen, onClose, product })
                                                 layout="responsive"
                                                 width={100}
                                                 height={128}
+                                                className="rounded-lg"
                                                 objectFit="cover"
                                             />
                                         </div>

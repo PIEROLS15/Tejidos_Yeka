@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Image from 'next/image';
+import { FaAngleDown } from 'react-icons/fa';
+import SaveButton from '@/components/ui/buttons/saveButtonAdmin';
 
 interface Color {
     id: number;
@@ -132,6 +134,9 @@ const AddColorModal = ({ isOpen, onClose, productId, onColorAdded }: AddColorMod
 
     if (!isOpen) return null;
 
+    const inputStyles =
+        "border border-darklight p-2 w-full rounded-[10px] text-[12px] 2xl:text-[16px] text-dark bg-whitedark focus:outline-none dark:bg-darklight dark:text-white dark:border-white"
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
             <div className="rounded-lg shadow-lg max-w-md w-full">
@@ -160,19 +165,21 @@ const AddColorModal = ({ isOpen, onClose, productId, onColorAdded }: AddColorMod
 
                     <form onSubmit={handleSubmit} className="w-full space-y-4">
                         <div className="space-y-2 text-dark dark:text-white">
-                            <strong> Color: </strong>
-                            <select
-                                value={selectedColor}
-                                onChange={(e) => setSelectedColor(e.target.value)}
-                                className="w-full mt-2 p-2 border border-dark rounded bg-whitedark dark:bg-darklight dark:text-white focus:outline-none "
-                            >
-                                <option value="">Seleccione un color</option>
-                                {colors.map((color) => (
-                                    <option key={color.id} value={color.id}>
-                                        {color.nombre} - {color.codigo_color}
-                                    </option>
-                                ))}
-                            </select>
+                            <strong>Color:</strong>
+                            <div className="relative">
+                                <select
+                                    value={selectedColor}
+                                    onChange={(e) => setSelectedColor(e.target.value)}
+                                    className="border border-darklight p-2 w-full rounded-[10px] text-[12px] 2xl:text-[16px] text-dark bg-whitedark focus:outline-none dark:bg-darklight dark:text-white dark:border-white appearance-none pr-10">
+                                    <option value="">Seleccione un color</option>
+                                    {colors.map((color) => (
+                                        <option key={color.id} value={color.id}>
+                                            {color.nombre} - {color.codigo_color}
+                                        </option>
+                                    ))}
+                                </select>
+                                <FaAngleDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-dark pointer-events-none dark:text-white" />
+                            </div>
                         </div>
 
                         <div className="space-y-2 text-dark dark:text-white">
@@ -181,9 +188,10 @@ const AddColorModal = ({ isOpen, onClose, productId, onColorAdded }: AddColorMod
                                 type="number"
                                 value={cantidad}
                                 onChange={(e) => setCantidad(e.target.value)}
-                                className="w-full bg-whitedark p-2 rounded-lg border border-dark focus:outline-none dark:bg-darklight dark:text-white"
+                                className={inputStyles}
                                 min="1"
                             />
+
                         </div>
 
                         <div className="space-y-2 text-dark dark:text-white">
@@ -220,14 +228,11 @@ const AddColorModal = ({ isOpen, onClose, productId, onColorAdded }: AddColorMod
                             )}
                         </div>
 
-                        <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                                type="submit"
+                        <div className="flex justify-end space-x-2">
+                            <SaveButton
+                                isLoading={isLoading}
                                 disabled={isLoading}
-                                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary disabled:opacity-50"
-                            >
-                                {isLoading ? 'Guardando...' : 'Guardar'}
-                            </button>
+                            />
                         </div>
                     </form>
                 </div>

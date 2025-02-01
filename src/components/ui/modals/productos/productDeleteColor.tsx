@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Image from 'next/image';
+import { FaAngleDown } from 'react-icons/fa';
 
 interface Color {
     id: number;
@@ -147,18 +148,21 @@ const DeleteColorModal = ({ isOpen, onClose, productId, onColorDelete }: DeleteC
                     <form className="w-full space-y-4">
                         <div className="space-y-2 text-dark dark:text-white">
                             <strong> Colores: </strong>
-                            <select
-                                value={selectedColor}
-                                onChange={handleColorChange}
-                                className="w-full mt-2 p-2 border border-dark rounded bg-white dark:bg-darklight dark:text-white focus:outline-none"
-                            >
-                                <option value="">Seleccione un color</option>
-                                {colors.map((color) => (
-                                    <option key={color.id} value={color.id}>
-                                        {color.nombre} - {color.codigo_color}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className='relative'>
+                                <select
+                                    value={selectedColor}
+                                    onChange={handleColorChange}
+                                    className="border border-darklight p-2 w-full rounded-[10px] text-[12px] 2xl:text-[16px] text-dark bg-whitedark focus:outline-none dark:bg-darklight dark:text-white dark:border-white appearance-none pr-10"
+                                >
+                                    <option value="">Seleccione un color</option>
+                                    {colors.map((color) => (
+                                        <option key={color.id} value={color.id}>
+                                            {color.nombre} - {color.codigo_color}
+                                        </option>
+                                    ))}
+                                </select>
+                                <FaAngleDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-dark pointer-events-none dark:text-white" />
+                            </div>
                         </div>
 
                         {selectedImage && (

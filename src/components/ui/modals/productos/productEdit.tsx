@@ -1,9 +1,19 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FaSave, FaTimes } from 'react-icons/fa';
 import { Products } from '@/types/products';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
+import dynamic from 'next/dynamic'
+import 'react-quill/dist/quill.snow.css';
+import DropdownAdmin from '@/components/ui/dropdowns/dropdownAdmin';
+import ColorDropdown from '@/components/ui/dropdowns/dropdownColorAdmin';
+import SaveButton from '@/components/ui/buttons/saveButtonAdmin';
+
+// Cargar ReactQuill dinámicamente y desactivar SSR
+const ReactQuill = dynamic(() => import('react-quill'), {
+    ssr: false,
+});
 
 interface ProductEditModalProps {
     isOpen: boolean;
@@ -52,6 +62,9 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
     const [marcas, setMarcas] = useState<Marcas[]>([]);
     const [selectedMarcas, setSelectedMarcas] = useState<string>('');
     const [error, setError] = useState<string>('');
+    const [editableStock, setEditableStock] = useState<number | null>(null);
+    const [description, setDescription] = useState<string>('');
+    const [isLoading, setIsLoading] = useState(false);
 
     // Obtener categorías
     useEffect(() => {
@@ -100,20 +113,38 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
 
     // Establecer el primer color disponible por defecto cuando el modal se abre
     useEffect(() => {
-        if (isOpen && product && product.stockColores.length > 0) {
-            setSelectedColor(product.stockColores[0].colores.nombre);
+        if (isOpen && product) {
+            if (product.stockColores.length > 0) {
+                setSelectedColor(product.stockColores[0].colores.nombre);
+                setEditableStock(product.stockColores[0].cantidad);
+            } else if (product.stock !== null) {
+                setEditableStock(product.stock);
+            }
         }
     }, [isOpen, product]);
 
-    // Inicializar el estado del producto editado
+    // Inicializar el estado del producto editado y la descripción en Quill
     useEffect(() => {
         if (product) {
             setEditedProduct({ ...product });
             setSelectedCategorias(product.categoriasProductos.id.toString());
             setSelectedMateriales(product.materiales?.id?.toString() || '');
             setSelectedMarcas(product.marcas?.id?.toString() || '');
+            setDescription(product.descripcion);
         }
     }, [product]);
+
+    // Actualizar el stock editable cuando se selecciona un color
+    useEffect(() => {
+        if (selectedColor && product) {
+            const selectedStockColor = product.stockColores.find(
+                (sc) => sc.colores.nombre === selectedColor
+            );
+            if (selectedStockColor) {
+                setEditableStock(selectedStockColor.cantidad);
+            }
+        }
+    }, [selectedColor, product]);
 
     if (!isOpen || !product || !editedProduct) return null;
 
@@ -181,202 +212,219 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
         } : null);
     };
 
+    // Manejar cambios en el stock editable
+    const handleStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value, 10);
+        setEditableStock(isNaN(value) ? null : value);
+    };
+
+    // Manejar cambios en la descripción con Quill
+    const handleDescriptionChange = (value: string) => {
+        setDescription(value);
+        setEditedProduct(prev => prev ? {
+            ...prev,
+            descripcion: value,
+        } : null);
+    };
+
     // Guardar los cambios
     const handleSave = async () => {
         if (editedProduct) {
             try {
-                const response = await fetch(`/api/productos/${editedProduct.id}`, {
+                const updatedProduct = {
+                    ...editedProduct,
+                    stock: product.imagen_principal ? editableStock : editedProduct.stock,
+                    stockColores: product.imagen_principal
+                        ? editedProduct.stockColores
+                        : editedProduct.stockColores.map(sc => ({
+                            ...sc,
+                            cantidad: sc.colores.nombre === selectedColor ? editableStock || 0 : sc.cantidad,
+                        })),
+                    id_categoria: parseInt(selectedCategorias),
+                    id_material: parseInt(selectedMateriales),
+                    id_marca: parseInt(selectedMarcas),
+                };
+
+                setIsLoading(true);
+
+                const response = await fetch(`/api/productos/${updatedProduct.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        nombre: editedProduct.nombre,
-                        descripcion: editedProduct.descripcion,
-                        precio: editedProduct.precio,
-                        id_categoria: editedProduct.categoriasProductos.id,
-                        id_material: editedProduct.materiales?.id || null,
-                        id_marca: editedProduct.marcas?.id || null,
-                    }),
+                    body: JSON.stringify(updatedProduct),
                 });
 
                 if (!response.ok) {
                     throw new Error('Error al actualizar el producto');
                 }
 
-                const updatedProduct = await response.json();
-                onSave(updatedProduct);
+                const savedProduct = await response.json();
+                onSave(savedProduct);
                 onClose();
+                toast.success('Producto actualizado correctamente');
             } catch (error) {
                 setError('Error al guardar los cambios');
                 console.error(error);
+            } finally {
+                setIsLoading(false);
             }
         }
     };
 
+    const inputStyles =
+        "border border-darklight p-2 w-full rounded-[10px] text-[12px] 2xl:text-[16px] text-dark bg-whitedark focus:outline-none dark:bg-darklight dark:text-white dark:border-white"
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Editar Producto</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+            <div className="rounded-lg shadow-lg max-w-4xl w-full">
+                {/* Encabezado del Modal */}
+                <div className="flex items-center justify-between bg-primary text-white p-2 2xl:p-3 w-full rounded-t-lg">
+                    <h2 className="text-sm 2xl:text-xl font-bold">Editar Producto</h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-xl text-gray-500 ml-4"
                     >
-                        <FaTimes />
+                        <Image
+                            src={`/icons/closeWhite.svg`}
+                            alt="Close"
+                            width={24}
+                            height={24}
+                        />
                     </button>
                 </div>
 
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                        <span className="block sm:inline">{error}</span>
-                    </div>
-                )}
-
-                <form className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Nombre</label>
-                        <input
-                            type="text"
-                            name="nombre"
-                            value={editedProduct.nombre}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Descripción</label>
-                        <textarea
-                            name="descripcion"
-                            value={editedProduct.descripcion}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            rows={3}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Precio</label>
-                        <input
-                            type="text"
-                            name="precio"
-                            value={editedProduct.precio}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        />
-                    </div>
-
-                    <div className="space-y-2 text-dark dark:text-white w-full">
-                        <strong> Categoría: </strong>
-                        <select
-                            value={selectedCategorias}
-                            onChange={handleCategoryChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        >
-                            <option value="">Seleccione una categoría</option>
-                            {categorias.map((categoria) => (
-                                <option key={categoria.id} value={categoria.id}>
-                                    {categoria.nombre}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {editedProduct.materiales && (
-                        <div className="space-y-2 text-dark dark:text-white w-full">
-                            <strong> Materiales: </strong>
-                            <select
-                                value={selectedMateriales}
-                                onChange={handleMaterialChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            >
-                                <option value="">Seleccione un material</option>
-                                {materiales.map((material) => (
-                                    <option key={material.id} value={material.id}>
-                                        {material.nombre}
-                                    </option>
-                                ))}
-                            </select>
+                {/* Contenido del Modal */}
+                <div className='bg-white dark:bg-dark p-4 2xl:p-8 flex rounded-b-lg w-full'>
+                    {error && (
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 w-full">
+                            <span className="block sm:inline">{error}</span>
                         </div>
                     )}
 
-                    {editedProduct.marcas && (
-                        <div className="space-y-2 text-dark dark:text-white w-full">
-                            <strong> Marcas: </strong>
-                            <select
-                                value={selectedMarcas}
-                                onChange={handleBrandChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            >
-                                <option value="">Seleccione una marca</option>
-                                {marcas.map((marca) => (
-                                    <option key={marca.id} value={marca.id}>
-                                        {marca.nombre}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
+                    <form className="space-y-2 2xl:space-y-4 w-full">
+                        <div className='flex flex-row w-full'>
+                            {/* Izquierda */}
+                            <div className="w-1/2 pr-4 space-y-2 2xl:space-y-4">
+                                {/* Nombre del Producto */}
+                                <div className="space-y-2 text-dark dark:text-white">
+                                    <strong className='text-[12px] 2xl:text-[16px]'> Nombre del Producto: </strong>
+                                    <input
+                                        type="text"
+                                        name="nombre"
+                                        value={editedProduct.nombre}
+                                        onChange={handleInputChange}
+                                        className={inputStyles}
+                                    />
+                                </div>
 
-                    <div>
-                        {(product.stockColores.length > 0 || imagesToShow.length > 0) && (
-                            <div className="flex-1">
-                                <div className='text-dark dark:text-white'>
-                                    {product.stockColores.length > 0 && (
-                                        <>
-                                            <h3 className="font-semibold">Colores Disponibles:</h3>
-                                            <select
-                                                className="mt-2 p-2 border border-dark rounded bg-whitedark dark:bg-darklight dark:text-white focus:outline-none "
-                                                onChange={(e) => setSelectedColor(e.target.value)}
-                                                value={selectedColor || ''}
-                                            >
-                                                {product.stockColores.map((color) => (
-                                                    <option key={color.id} value={color.colores.nombre}>
-                                                        {color.colores.nombre}  {color.colores.codigo_color} - {color.cantidad} unidades
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </>
-                                    )}
+                                {/* Precio */}
+                                <div className="space-y-2 text-dark dark:text-white">
+                                    <strong className='text-[12px] 2xl:text-[16px]'> Precio del Producto: </strong>
+                                    <input
+                                        type="text"
+                                        name="precio"
+                                        value={editedProduct.precio}
+                                        onChange={handleInputChange}
+                                        className={inputStyles}
+                                    />
+                                </div>
 
-                                    <h3 className="font-semibold">Imagen:</h3>
-                                    <div className="grid grid-cols-3 gap-2 mt-2">
-                                        {imagesToShow.map((image, index) => (
-                                            <div key={index} className="w-full h-32 overflow-hidden relative">
-                                                <Image
-                                                    src={image.imagen}
-                                                    alt={`Imagen del producto`}
-                                                    layout="responsive"
-                                                    width={100}
-                                                    height={128}
-                                                    objectFit="cover"
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
+                                {/* Categoria */}
+                                <DropdownAdmin
+                                    label="Categoría:"
+                                    options={categorias}
+                                    selectedValue={selectedCategorias}
+                                    onChange={handleCategoryChange}
+                                />
+
+                                {editedProduct.materiales && (
+                                    <DropdownAdmin
+                                        label="Materiales:"
+                                        options={materiales}
+                                        selectedValue={selectedMateriales}
+                                        onChange={handleMaterialChange}
+                                    />
+                                )}
+
+                                {editedProduct.marcas && (
+                                    <DropdownAdmin
+                                        label="Materiales:"
+                                        options={marcas}
+                                        selectedValue={selectedMarcas}
+                                        onChange={handleBrandChange}
+                                    />
+                                )}
+
+                                <div className="space-y-2 text-dark dark:text-white w-full">
+                                    <strong> Descripción del Producto: </strong>
+                                    <ReactQuill
+                                        value={description}
+                                        onChange={handleDescriptionChange}
+                                        className="w-full mt-2 p-3 border border-dark rounded span-white bg-whitedark dark:bg-darklight dark:text-white dark:border-white focus:outline-none"
+                                    />
                                 </div>
                             </div>
-                        )}
-                    </div>
+                            {/* derecha */}
+                            <div className="w-1/2 pl-4 space-y-2 2xl:space-y-4">
+                                {/* Mostrar el stock editable solo si no es null */}
+                                {(product.stock !== null || (selectedColor && product.stockColores.length > 0)) && (
+                                    <div className="space-y-2 text-dark dark:text-white">
+                                        <strong className='text-[12px] 2xl:text-[16px]'>
+                                            {product.imagen_principal ? 'Stock General' : `Stock para ${selectedColor}`}
+                                        </strong>
+                                        <input
+                                            type="number"
+                                            value={editableStock ?? ''}
+                                            onChange={handleStockChange}
+                                            className={inputStyles}
+                                        />
+                                    </div>
+                                )}
 
-                    <div className="flex justify-end space-x-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 flex items-center"
-                        >
-                            <FaTimes className="mr-2" /> Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleSave}
-                            className="bg-[#28A745] text-white px-4 py-2 rounded-md hover:bg-green-600 flex items-center"
-                        >
-                            <FaSave className="mr-2" /> Guardar
-                        </button>
-                    </div>
-                </form>
+                                {/* Selector de colores y visualización de imágenes */}
+                                <div>
+                                    {(product.stockColores.length > 0 || imagesToShow.length > 0) && (
+                                        <div className="flex-1">
+                                            <div className='text-dark dark:text-white'>
+                                                {/* Usar el componente ColorDropdown */}
+                                                {product.stockColores.length > 0 && (
+                                                    <ColorDropdown
+                                                        label='Colores dispoibles: '
+                                                        colors={product.stockColores}
+                                                        selectedColor={selectedColor || ''}
+                                                        onChange={(e) => setSelectedColor(e.target.value)}
+                                                    />
+                                                )}
+
+                                                <strong className='text-[12px] 2xl:text-[16px]'>Imagen:</strong>
+                                                <div className="flex justify-center mt-2">
+                                                    <div className="w-60 h-60 overflow-hidden relative">
+                                                        <Image
+                                                            src={imagesToShow[0]?.imagen}
+                                                            alt={`Imagen del producto`}
+                                                            layout="fill"
+                                                            objectFit="cover"
+                                                            className="rounded-lg"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end space-x-2">
+                            <SaveButton
+                                onClick={handleSave}
+                                isLoading={isLoading}
+                                disabled={isLoading}
+                            />
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

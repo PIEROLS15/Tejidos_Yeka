@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '../../../../lib/prisma'; // Asegúrate de tener la configuración de Prisma en esta ubicación
-import { Promociones } from '@prisma/client';
+import prisma from '../../../../lib/prisma';
 
-// Endpoint GET para obtener un producto por ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-    const { id } = params; // Obtén el ID del producto desde los parámetros de la URL
+    const { id } = params;
 
     try {
         const producto = await prisma.productos.findUnique({
@@ -41,7 +39,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 }
 
-// Endpoint PUT para actualizar un producto existente
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
     const { id } = params;
     const {
@@ -52,10 +49,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         id_material,
         id_marca,
         imagen_principal,
-        stock
+        stock,
+        stockColores,
+        imagenesColores
     } = await request.json();
 
     try {
+        // Actualizar el producto principal
         const productoActualizado = await prisma.productos.update({
             where: { id: parseInt(id) },
             data: {
@@ -85,7 +85,57 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             },
         });
 
-        return NextResponse.json(productoActualizado, { status: 200 });
+        // Actualizar stockColores
+        if (stockColores && stockColores.length > 0) {
+            for (const stockColor of stockColores) {
+                await prisma.stockColores.updateMany({
+                    where: {
+                        id_producto: parseInt(id),
+                        id_color: stockColor.id_color,
+                    },
+                    data: {
+                        cantidad: stockColor.cantidad,
+                    },
+                });
+            }
+        }
+
+        // Actualizar imagenesColores
+        if (imagenesColores && imagenesColores.length > 0) {
+            for (const imagenColor of imagenesColores) {
+                await prisma.imagenesColores.updateMany({
+                    where: {
+                        id_producto: parseInt(id),
+                        id_color: imagenColor.id_color,
+                    },
+                    data: {
+                        imagen: imagenColor.imagen,
+                    },
+                });
+            }
+        }
+
+        // Obtener el producto actualizado con todas las relaciones
+        const productoCompleto = await prisma.productos.findUnique({
+            where: { id: parseInt(id) },
+            include: {
+                categoriasProductos: true,
+                materiales: true,
+                marcas: true,
+                imagenesColores: {
+                    include: {
+                        colores: true,
+                    },
+                },
+                stockColores: {
+                    include: {
+                        colores: true,
+                    },
+                },
+            },
+        });
+
+        return NextResponse.json(productoCompleto, { status: 200 });
     } catch (error) {
         console.error('Error al actualizar el producto:', error);
         return NextResponse.json({
@@ -95,29 +145,29 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 }
 
-// Endpoint DELETE para eliminar un producto por ID
+
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-    const { id } = params; // Obtén el ID del producto desde los parámetros de la URL
+    const { id } = params;
 
     try {
         // Eliminar las relaciones de promociones asociadas al producto
         await prisma.promocionesProductos.deleteMany({
-            where: { id_producto: parseInt(id) }, // Asegúrate de que este campo esté correcto
+            where: { id_producto: parseInt(id) },
         });
 
         // Eliminar las relaciones de imágenes asociadas al producto
         await prisma.imagenesColores.deleteMany({
-            where: { id_producto: parseInt(id) }, // Asegúrate de que este campo esté correcto
+            where: { id_producto: parseInt(id) },
         });
 
         // Eliminar las relaciones de stock asociadas al producto
         await prisma.stockColores.deleteMany({
-            where: { id_producto: parseInt(id) }, // Asegúrate de que este campo esté correcto
+            where: { id_producto: parseInt(id) },
         });
 
         // Eliminar las relaciones de colores asociadas al producto
         await prisma.colores.deleteMany({
-            where: { productos: { some: { id: parseInt(id) } } }, // Relación de productos a colores
+            where: { productos: { some: { id: parseInt(id) } } },
         });
 
         // Finalmente, eliminar el producto
