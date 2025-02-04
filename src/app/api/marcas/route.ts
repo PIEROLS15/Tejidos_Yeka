@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 
 export async function GET() {
     try {
-        // Obtener las marcas ordenados por ID descendente
         const marcas = await prisma.marcas.findMany({
             orderBy: { id: 'asc' },
         });
@@ -13,13 +12,11 @@ export async function GET() {
         return NextResponse.json(marcas, { status: 200 });
 
     } catch {
-        // Retornar un error con estado 500
         return NextResponse.json(
             { error: 'Ocurrió un error al obtener los colores.' },
             { status: 500 }
         );
     } finally {
-        // Asegurarse de desconectar el cliente Prisma
         await prisma.$disconnect();
     }
 }
@@ -27,20 +24,64 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { nombre } = body;
+        const { nombre, logo } = body;
 
-        if (!nombre) {
+        if (!nombre && !logo) {
             return NextResponse.json(
-                { error: 'El nombre es obligatorio' },
+                { error: 'Todos los campos son obligatorios' },
                 { status: 400 }
             );
         }
 
-        const nuevoColor = await prisma.marcas.create({
-            data: { nombre },
+        const nuevaMarca = await prisma.marcas.create({
+            data: { nombre, logo },
         });
 
-        return NextResponse.json(nuevoColor, { status: 201 });
+        return NextResponse.json(nuevaMarca, { status: 201 });
+
+    } catch (error) {
+        return NextResponse.json(
+            { error: 'Ocurrió un error al procesar la solicitud.' },
+            { status: 500 }
+        );
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const url = new URL(request.url);
+        const id = url.searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json(
+                { error: 'El ID de la marca es obligatorio' },
+                { status: 400 }
+            );
+        }
+
+        const marcaId = parseInt(id, 10);
+
+        const categoriaExistente = await prisma.marcas.findUnique({
+            where: { id: marcaId },
+        });
+
+        if (!categoriaExistente) {
+            return NextResponse.json(
+                { error: 'La marca no existe' },
+                { status: 404 }
+            );
+        }
+
+        await prisma.marcas.delete({
+            where: { id: marcaId },
+        });
+
+        return NextResponse.json(
+            { message: 'Marca eliminada correctamente' },
+            { status: 200 }
+        );
 
     } catch (error) {
         return NextResponse.json(

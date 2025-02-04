@@ -36,11 +36,11 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const nuevoColor = await prisma.categoriasProductos.create({
+        const nuevoCategoria = await prisma.categoriasProductos.create({
             data: { nombre },
         });
 
-        return NextResponse.json(nuevoColor, { status: 201 });
+        return NextResponse.json(nuevoCategoria, { status: 201 });
 
     } catch (error) {
         return NextResponse.json(

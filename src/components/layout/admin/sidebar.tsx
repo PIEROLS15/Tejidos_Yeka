@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { TfiWorld } from 'react-icons/tfi';
-import { FaUsers, FaShoppingCart, FaShoppingBasket } from 'react-icons/fa';
+import { FaUsers, FaShoppingCart, FaShoppingBasket, FaFlag, FaTools } from 'react-icons/fa';
 import { FaUsersGear } from 'react-icons/fa6';
 import { MdDashboard, MdOutlineRequestQuote, MdCategory, MdExpandMore, MdInvertColors } from "react-icons/md";
 import { RiDiscountPercentFill } from "react-icons/ri";
@@ -87,9 +87,20 @@ const Sidebar = () => {
                     <MdOutlineRequestQuote className="text-xl w-6" />
                     <span>Cotizaciones</span>
                 </Link>
+
                 <Link href="/admin/categorias" className={`${linkStyles} ${getLinkStyles('/admin/categorias')}`}>
                     <MdCategory className="text-xl w-6" />
                     <span>Categorias</span>
+                </Link>
+
+                <Link href="/admin/marcas" className={`${linkStyles} ${getLinkStyles('/admin/marcas')}`}>
+                    <FaFlag className="text-xl w-6" />
+                    <span>Marcas</span>
+                </Link>
+
+                <Link href="/admin/materiales" className={`${linkStyles} ${getLinkStyles('/admin/materiales')}`}>
+                    <FaTools className="text-xl w-6" />
+                    <span>Materiales</span>
                 </Link>
 
                 <Link href="/admin/colores" className={`${linkStyles} ${getLinkStyles('/admin/colores')}`}>
