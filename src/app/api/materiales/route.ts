@@ -52,3 +52,47 @@ export async function POST(request: NextRequest) {
         await prisma.$disconnect();
     }
 }
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const url = new URL(request.url);
+        const id = url.searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json(
+                { error: 'El ID del material es obligatorio' },
+                { status: 400 }
+            );
+        }
+
+        const materialId = parseInt(id, 10);
+
+        const categoriaExistente = await prisma.materiales.findUnique({
+            where: { id: materialId },
+        });
+
+        if (!categoriaExistente) {
+            return NextResponse.json(
+                { error: 'El material no existe' },
+                { status: 404 }
+            );
+        }
+
+        await prisma.materiales.delete({
+            where: { id: materialId },
+        });
+
+        return NextResponse.json(
+            { message: 'Material eliminado correctamente' },
+            { status: 200 }
+        );
+
+    } catch (error) {
+        return NextResponse.json(
+            { error: 'Ocurrió un error al procesar la solicitud.' },
+            { status: 500 }
+        );
+    } finally {
+        await prisma.$disconnect();
+    }
+}

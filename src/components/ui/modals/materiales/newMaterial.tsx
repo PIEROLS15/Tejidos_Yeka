@@ -3,28 +3,23 @@ import Image from 'next/image';
 import { toast } from 'react-toastify';
 import SaveButton from '../../buttons/saveButtonAdmin';
 import InputAdmin from '../../inputAdmin';
-import ImageUpload from '@/components/ui/imageUpload';
 
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onBrandAdded?: () => void;
+    onMaterialAdded?: () => void;
 }
 
-const NewBrand: React.FC<ModalProps> = ({ isOpen, onClose, onBrandAdded }) => {
+const NewMaterial: React.FC<ModalProps> = ({ isOpen, onClose, onMaterialAdded }) => {
     const [nombre, setNombre] = useState('');
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [image, setImage] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string>('');
 
     useEffect(() => {
         if (!isOpen) {
             setNombre('');
             setError('');
             setIsSubmitting(false);
-            setImage(null);
-            setImagePreview('');
         }
     }, [isOpen]);
 
@@ -32,11 +27,7 @@ const NewBrand: React.FC<ModalProps> = ({ isOpen, onClose, onBrandAdded }) => {
         e.preventDefault();
 
         if (!nombre.trim()) {
-            setError('Por favor ingresa el nombre de la categoria');
-            return;
-        }
-        if (!image) {
-            setError('Por favor seleccione una imagen');
+            setError('Por favor ingresa el nombre del material');
             return;
         }
 
@@ -44,30 +35,14 @@ const NewBrand: React.FC<ModalProps> = ({ isOpen, onClose, onBrandAdded }) => {
         setError('');
 
         try {
-            const formData = new FormData();
-            formData.append('file', image);
 
-            // Subimos la imagen
-            const uploadResponse = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!uploadResponse.ok) {
-                throw new Error('Error al subir la imagen');
-            }
-
-            const { fileName } = await uploadResponse.json();
-            const imagePath = `/images/${fileName}`;
-
-            const response = await fetch('/api/marcas', {
+            const response = await fetch('/api/materiales', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     nombre: nombre.trim(),
-                    logo: imagePath
                 })
             });
 
@@ -78,18 +53,9 @@ const NewBrand: React.FC<ModalProps> = ({ isOpen, onClose, onBrandAdded }) => {
                 throw new Error(errorData.error || 'Error al crear la marca');
             }
 
-            if (!response.ok) {
-                try {
-                    await fetch(`/api/upload/${fileName}`, { method: 'DELETE' });
-                } catch (deleteError) {
-                    console.error('Error al eliminar la imagen:', deleteError);
-                }
-                throw new Error(data.error || 'Error al agregar la marca');
-            }
-
             // Reset fields and close modal
             setNombre('');
-            onBrandAdded && onBrandAdded();
+            onMaterialAdded && onMaterialAdded();
             onClose();
 
             toast.success('Marca creada correctamente');
@@ -109,7 +75,7 @@ const NewBrand: React.FC<ModalProps> = ({ isOpen, onClose, onBrandAdded }) => {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
             <div className="rounded-lg shadow-lg max-w-md w-full">
                 <div className="flex items-center justify-between bg-primary text-white p-3 w-full rounded-t-lg">
-                    <h2 className="text-xl font-bold">Nueva Marca</h2>
+                    <h2 className="text-xl font-bold">Nuevo Material</h2>
                     <button
                         onClick={onClose}
                         className="p-2"
@@ -130,15 +96,8 @@ const NewBrand: React.FC<ModalProps> = ({ isOpen, onClose, onBrandAdded }) => {
                         </div>
                     )}
                     <div className='flex flex-col space-y-2 mb-4'>
-                        <InputAdmin label='Nombre de la marca' placeholder='Ingresa el nombre de la nueva marca' value={nombre} inputStyles={inputStyles} onChange={(e) => setNombre(e.target.value)} />
+                        <InputAdmin label='Nombre del material' placeholder='Ingresa el nuevo material' value={nombre} inputStyles={inputStyles} onChange={(e) => setNombre(e.target.value)} />
                     </div>
-
-                    <ImageUpload
-                        label='Logo'
-                        onImageUpload={(file) => setImage(file)}
-                        imagePreview={imagePreview}
-                        setImagePreview={setImagePreview}
-                    />
 
                     <div className="flex justify-end space-x-4 mt-4">
                         <SaveButton text="Crear" loadingText="Creando..." />
@@ -150,4 +109,4 @@ const NewBrand: React.FC<ModalProps> = ({ isOpen, onClose, onBrandAdded }) => {
     );
 };
 
-export default NewBrand;
+export default NewMaterial;

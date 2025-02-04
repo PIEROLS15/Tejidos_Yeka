@@ -102,7 +102,7 @@ const MarcasTable = () => {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to delete category');
+                    throw new Error('Failed to delete brand');
                 }
 
                 // Actualizar la lista local
@@ -113,7 +113,7 @@ const MarcasTable = () => {
                 setIsDeleteModalOpen(false);
                 setSelectedBrandId(null);
             } catch (error) {
-                console.error('Error deleting category:', error);
+                console.error('Error deleting brand:', error);
                 toast.error('Error al eliminar la marca');
             }
         }
@@ -167,7 +167,7 @@ const MarcasTable = () => {
             <NewBrand
                 isOpen={isBrandModalOpen}
                 onClose={() => setIsBrandModalOpen(false)}
-                onColorAdded={fetchBrands}
+                onBrandAdded={fetchBrands}
             />
 
             {isDeleteModalOpen && (
